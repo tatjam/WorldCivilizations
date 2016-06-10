@@ -26,7 +26,7 @@ namespace Explore
 		void deleteLayer(int z);
 
 		//Draw all renderlayers
-		void draw(sf::RenderWindow window);
+		void draw(sf::RenderWindow* window);
 
 		Scene();
 		~Scene();

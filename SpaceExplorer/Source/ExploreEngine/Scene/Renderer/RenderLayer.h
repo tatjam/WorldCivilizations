@@ -18,7 +18,7 @@ namespace Explore
 		int z = 0;
 
 		//Call this to render all entities
-		void draw(sf::RenderWindow window);
+		void draw(sf::RenderWindow* window);
 
 		RenderLayer();
 		~RenderLayer();

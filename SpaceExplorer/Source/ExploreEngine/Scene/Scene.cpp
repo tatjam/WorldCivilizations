@@ -32,6 +32,16 @@ void Scene::deleteLayer(int z)
 	layers.erase(z);
 }
 
+void Scene::draw(sf::RenderWindow* w)
+{
+
+	for (auto layer : layers)
+	{
+		layer.second.draw(w);
+	}
+
+}
+
 Scene::Scene()
 {
 }
