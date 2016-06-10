@@ -123,7 +123,17 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Source\ExploreEngine\Scene\Renderer\RenderLayer.cpp" />
+    <ClCompile Include="Source\ExploreEngine\Scene\Scene.cpp" />
+    <ClCompile Include="Source\ExploreEngine\Entity\Entity.cpp" />
+    <ClCompile Include="Source\ExploreEngine\Engine.cpp" />
     <ClCompile Include="Source\Main.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Source\ExploreEngine\Scene\Renderer\RenderLayer.h" />
+    <ClInclude Include="Source\ExploreEngine\Scene\Scene.h" />
+    <ClInclude Include="Source\ExploreEngine\Entity\Entity.h" />
+    <ClInclude Include="Source\ExploreEngine\Engine.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
