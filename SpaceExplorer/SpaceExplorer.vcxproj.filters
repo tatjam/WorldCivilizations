@@ -53,5 +53,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="res\settings.json" />
+    <None Include="save\example.json" />
   </ItemGroup>
 </Project>

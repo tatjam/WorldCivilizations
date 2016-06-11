@@ -1,0 +1,94 @@
+{
+  "data": {
+    "width": 128,
+    "height": 128,
+    "seed": 12345,
+    "detail": 43,
+    "connection": 4.2,
+    "mountains": 3.5,
+    "seaLevel": 128,
+    "smooth": false,
+    "islands": 0.32
+  },
+
+  "gamedata": {
+    "civCount": 1,
+    "civs": {
+      "0": {
+        "name": "Spain",
+        "alive": true,
+        "unitCount": 1,
+        "units": {
+          "0": {
+            "unitType": "warrior",
+            "location": {
+              "x": 12,
+              "y": 43
+            }
+          },
+          "1": {
+            "unitType": "worker",
+            "location": {
+              "x": 13,
+              "y": 45
+            }
+          }
+        },
+        "cityCount": 1,
+        "cities": {
+          "0": {
+            "name": "Madrid",
+            "location": {
+              "x": 11,
+              "y": 43
+            },
+            "production": {
+              "type": "warrior",
+              "progress": 12
+            },
+            "economy": {
+              "production": 4,
+              "money": 4,
+              "population": 2,
+              "food": 4,
+              "science": 8,
+              "culture": 4
+            },
+            "buildingCount": 1,
+            "buildings": {
+              "0": {
+                "name": "monument",
+                "workers": 0
+              }
+            },
+            "tileCount": 5,
+            "tiles": {
+              "0": {
+                "x": 11,
+                "y": 43
+              },
+              "1": {
+                "x": 12,
+                "y": 43
+              },
+              "2": {
+                "x": 10,
+                "y": 43
+              },
+              "3": {
+                "x": 11,
+                "y": 42
+              },
+              "4": {
+                "x": 11,
+                "y": 44
+              }
+            }
+          }
+        }
+      }
+    }
+
+  }
+
+}
