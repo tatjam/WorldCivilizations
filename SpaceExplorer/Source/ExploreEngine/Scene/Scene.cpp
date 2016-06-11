@@ -3,6 +3,11 @@
 using namespace Explore;
 
 
+void Scene::update()
+{
+	return;
+}
+
 bool Scene::insertLayer(RenderLayer layer)
 {
 	return Scene::insertLayer(layer, layer.z);

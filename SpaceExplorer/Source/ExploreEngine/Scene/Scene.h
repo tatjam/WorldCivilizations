@@ -12,6 +12,8 @@ namespace Explore
 
 		std::map<int, RenderLayer> layers;
 
+		std::map<int, Entity> entities;
+
 		//If the layer is at the same z as another layer
 		//or the operation fails it will return false
 		bool insertLayer(RenderLayer layer);
@@ -27,6 +29,8 @@ namespace Explore
 
 		//Draw all renderlayers
 		void draw(sf::RenderWindow* window);
+
+		void update();
 
 		Scene();
 		~Scene();
