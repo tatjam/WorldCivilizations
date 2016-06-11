@@ -128,12 +128,14 @@
     <ClCompile Include="Source\ExploreEngine\Entity\Entity.cpp" />
     <ClCompile Include="Source\ExploreEngine\Engine.cpp" />
     <ClCompile Include="Source\Main.cpp" />
+    <ClCompile Include="World.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Source\ExploreEngine\Scene\Renderer\RenderLayer.h" />
     <ClInclude Include="Source\ExploreEngine\Scene\Scene.h" />
     <ClInclude Include="Source\ExploreEngine\Entity\Entity.h" />
     <ClInclude Include="Source\ExploreEngine\Engine.h" />
+    <ClInclude Include="World.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="res\settings.json" />

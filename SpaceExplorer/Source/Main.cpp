@@ -53,18 +53,21 @@ int getSurrounding(sf::Image im, int x, int y, int r = 2)
 int main()
 {
 
+	//Minimum width 100 height 100
 	unsigned int width = 256;
 	unsigned int height = 256;
 
-	int detail = 54;
-	float connection = 5.5;
-	float mountains = 3.0;
-	int seaLevel = 170;
-	int seed = 5435364564;
+	int detail = 64;
+	float connection = 15.5;
+	float mountains = 43.0;
+	int seaLevel = 137;
+	unsigned int seed = -7547433;
 	bool smooth = true;
 
 
-	float islands = 0.3;
+	float islands = 0.15;
+
+	srand(seed);
 
 
 	sf::Image elev = sf::Image();
@@ -308,14 +311,14 @@ int main()
 			{
 				if (elev.getPixel(x, y).r >= seaLevel * 1.4)
 				{
-					count = 10;
+					count = 80;
 				}
 			}
 			else
 			{
 				if (elev.getPixel(x, y).r >= seaLevel * 1.4)
 				{
-					count += 5;
+					count += 60;
 				}
 				count--;
 				rain.setPixel(x, y, sf::Color(255 - count, 255 - count, 255 - count));
@@ -331,6 +334,16 @@ int main()
 	{
 		for (int y = 0; y < height; y++)
 		{
+
+			//Lone pixels may get deleted
+			if (getSurrounding(elev, x, y) <= 1)
+			{
+				if (rand() % 1000 >= 250)
+				{
+					elev.setPixel(x, y, sf::Color::Black);
+				}
+			}
+
 			//If a pixel is not fully surrounded its beach
 			if (getSurrounding(elev, x, y) <= 3 && getSurrounding(elev, x, y) >= 1)
 			{
@@ -342,6 +355,8 @@ int main()
 			{
 				outim.setPixel(x, y, sf::Color(seaLevel - 50, seaLevel - 50, seaLevel - 50));
 			}
+
+		
 		}
 	}
 	elev = outim;
@@ -402,14 +417,14 @@ int main()
 							}
 						}
 						//Jungle
-						else if (rain.getPixel(x, y).r >= 120)
+						else if (rain.getPixel(x, y).r >= 140)
 						{
 							if (clim.getPixel(x, y).r >= 90)
 							{
 								biome.setPixel(x, y, sf::Color(139, 196, 131));
 							}
 						}
-						else if (rain.getPixel(x, y).r <= 90)
+						else if (rain.getPixel(x, y).r <= 140)
 						{
 							//Desert
 							if (clim.getPixel(x, y).r >= 140)
@@ -442,6 +457,54 @@ int main()
 		}
 	}
 
+
+	//Strategic Resource distribution generation
+	//FOREST (& ANIMALS): GREEN CHANNEL
+	//MINERAL: BLUE CHANNEL
+	//PETROL: RED CHANNEL
+	//URANIUM: ALPHA CHANNEL
+	//If more are to be added create another image
+
+	sf::Image strat = sf::Image();
+	strat.create(width, height, sf::Color::Black);
+
+
+	perlin.SetLacunarity(rand() % 12);
+	perlin.SetFrequency(rand() % 12 + 3);
+
+	perlin2.SetLacunarity(rand() % 6);
+	perlin2.SetFrequency(rand() % 5 + 2);
+
+	ridged.SetFrequency(rand() % 5 + 2);
+	ridged.SetLacunarity(rand() % 10 + 4);
+
+	for (int x = 0; x < width; x++)
+	{
+		for (int y = 0; y < height; y++)
+		{
+			//FOREST & MINERALS follow perlin distributions
+			double dX = (double)x / detail;
+			double dY = (double)y / detail;
+
+			double valPd = perlin.GetValue(dX, dY, 12.0);
+			unsigned int valP = ((valPd + 1) / 2) * 255;
+
+			double valRd = ridged.GetValue(dX, dY, 5.0);
+			unsigned int valR = ((valRd + 1) / 2) * 255;
+
+			double valPPd = perlin2.GetValue(dX + seed, dY + seed, 54.0);
+			unsigned int valPP = ((valPPd + 1) / 2) * 255;
+
+			if (elev.getPixel(x, y).r >= seaLevel)
+			{
+
+				sf::Color c = sf::Color((valPP + valRd / 2), valP, valPP, 255);
+
+				strat.setPixel(x, y, c);
+			}
+		}
+	}
+
 	sf::Texture tex = sf::Texture();
 	tex.loadFromImage(biome);
 
@@ -450,7 +513,7 @@ int main()
 	s.setTexture(tex);
 
 	tex.setSmooth(false);
-	s.setScale(2, 2);
+	s.setScale(window.getSize().x / width, window.getSize().x / width);
 
 
 	while (window.isOpen())
