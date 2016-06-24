@@ -13,17 +13,17 @@ public:
 	sf::Image resources;
 	sf::Image climate;
 
-	unsigned int seed;
-	int width;
-	int height;
-	int detail;
-	float connection;
-	float mountains;
-	int seaLevel;
-	unsigned int seed;
+	unsigned int seed = 1241;
+	int width = 128;
+	int height = 128;
+	int detail = 1.4;
+	float connection = 1.4;
+	float mountains = 2.5;
+	int seaLevel = 60;
 	bool smooth = true;
 	float islands = 0.15;
-
+	int polarCap = 10;
+	int polarCapRand = 10;
 
 
 	//Generates map to images from given data

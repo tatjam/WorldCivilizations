@@ -1,6 +1,5 @@
 #pragma once
 #include <string>
-#include "Scene/Scene.h"
 
 #include "../json/Loader.h"
 #include "../json/json/json.h"
@@ -9,11 +8,11 @@
 #include <string>
 #include <fstream>
 #include <streambuf>
-
-
+#include "Asset/AssetManager.h"
 
 namespace Explore
 {
+	class Scene;
 
 	class Engine
 	{
@@ -32,6 +31,8 @@ namespace Explore
 
 		//Initializes the game engine, loads all data, and starts the game
 		void setup();
+
+		AssetManager manager;
 
 		Engine();
 		~Engine();

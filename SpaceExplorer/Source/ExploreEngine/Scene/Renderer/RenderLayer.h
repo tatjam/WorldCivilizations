@@ -1,5 +1,6 @@
 #pragma once
 #include "../../Entity/Entity.h"
+#include "../../Sprite.h"
 
 #include <vector>
 #include "SFML/Graphics.hpp"
@@ -12,7 +13,7 @@ namespace Explore
 	{
 	public:
 
-		std::vector<sf::Sprite*> sprites;
+		std::vector<Sprite*> sprites;
 
 		//Z is used only when inserting, changing it will do nothing
 		int z = 0;
