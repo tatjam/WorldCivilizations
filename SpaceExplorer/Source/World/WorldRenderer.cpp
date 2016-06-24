@@ -36,7 +36,6 @@ void WorldRenderer::setup(sf::FloatRect viewRect)
 	float oldH = viewRect.height;
 	viewRect.width = (int)viewRect.width;
 	viewRect.height = (int)viewRect.height;
-	std::cout << "call" << std::endl;
 	for (int x = viewRect.left; x < viewRect.left + viewRect.width; x++)
 	{
 		sX++;

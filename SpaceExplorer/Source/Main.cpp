@@ -29,16 +29,22 @@ int main()
 	sf::View view = sf::View();
 
 	World world = World();
-	world.width = 256;
-	world.height = 128;
-	world.seaLevel = 120;
-	world.detail = 200;
-	world.connection = 0;
-	world.polarCap = 6;
-	world.seed = 541353;
+	world.width = 128;
+	world.height = 64;
+	world.seaLevel = 130;
+	world.detail = 90;
+	world.connection = 23;
+	world.polarCap = 1;
+	world.islands = 0.35;
+	world.polarCapRand = 2;
+	world.seed = 123456789;
 	world.rivers = 10;
 	world.invert = false;
-	world.generate();
+
+
+	world.generate(WorldType::TERRA);
+
+	world.load("./testoutput.json");
 
 	WorldRenderer render = WorldRenderer(&scene, &engine, &world, &view);
 	sf::FloatRect testView = sf::FloatRect();

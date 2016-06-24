@@ -49,9 +49,299 @@ int getSurrounding(sf::Image im, int x, int y, int r = 2)
 }
 
 
+void World::generate(WorldType type)
+{
+	switch (type)
+	{
+		case WorldType::SYMETRY:
+		{
+			generateA();
+		}
+		case WorldType::TERRA:
+		{
+			generateB();
+		}
+	}
+}
+
+void World::generateGeneric(noise::module::RidgedMulti ridged,
+	noise::module::Perlin perlin, noise::module::Perlin perlin2)
+{
+	//Climate generation
+
+	sf::Image clim = sf::Image();
+	clim.create(width, height);
+
+	ridged.SetFrequency(mountains);
+
+	for (int x = 0; x < width; x++)
+	{
+		for (int y = 0; y < height; y++)
+		{
+
+			unsigned int val = 0;
+			if (y > height / 2)
+			{
+				val = height - y;
+			}
+			else
+			{
+				val = y;
+			}
+
+			val *= 1.9;
+
+			clim.setPixel(x, y, sf::Color(val, val, val, 255));
+		}
+	}
+
+	//Add some noise
+	for (int x = 0; x < width; x++)
+	{
+		for (int y = 0; y < height; y++)
+		{
+
+			unsigned int val = clim.getPixel(x, y).r;
+			double dval = perlin.GetValue(x, y, 24.53) * 30.0;
+			val = (val + dval) / 2;
+			clim.setPixel(x, y, sf::Color(val, val, val, 255));
+		}
+	}
+
+	//-----------------------------------------------
+	//Rainfall
+
+	//Every sea tile creates rainfall, it moves right until it mets a tile
+	//higher than 1.4 sealevel
+
+	//Basically, for each x we will check until we meet a square and cut rainfall
+
+	sf::Image rain = sf::Image();
+	rain.create(width, height, sf::Color::White);
+
+
+	for (int y = 0; y < height; y++)
+	{
+		int count = 0;
+		for (int x = 0; x < width; x++)
+		{
+			if (count <= 0)
+			{
+				if (elevation.getPixel(x, y).r >= seaLevel * 1.4)
+				{
+					count = 80;
+				}
+			}
+			else
+			{
+				if (elevation.getPixel(x, y).r >= seaLevel * 1.4)
+				{
+					count += 60;
+				}
+				count--;
+				rain.setPixel(x, y, sf::Color(255 - count, 255 - count, 255 - count));
+			}
+		}
+	}
+
+
+
+	//Generate shores & beaches (basic cellular automata)
+
+	sf::Image outim = elevation;
+
+	for (int x = 0; x < width; x++)
+	{
+		for (int y = 0; y < height; y++)
+		{
+
+			//Lone pixels may get deleted
+			if (getSurrounding(elevation, x, y) <= 1)
+			{
+				if (rand() % 1000 >= 250)
+				{
+					elevation.setPixel(x, y, sf::Color::Black);
+				}
+			}
+
+			//If a pixel is not fully surrounded its beach
+			if (getSurrounding(elevation, x, y) <= 3 && getSurrounding(elevation, x, y) >= 1)
+			{
+				outim.setPixel(x, y, sf::Color(seaLevel + 1, seaLevel + 1, seaLevel + 1));
+			}
+
+			//If a pixel is closer than 3 pixels to something then it's shore
+			if (getSurrounding(elevation, x, y, 4) >= 1 && elevation.getPixel(x, y).r <= seaLevel)
+			{
+				outim.setPixel(x, y, sf::Color(seaLevel - 50, seaLevel - 50, seaLevel - 50));
+			}
+
+
+		}
+	}
+	elevation = outim;
+
+
+	//Generate biome map
+	//BY RGB 
+	//128 164 177  -  Ocean (elev <= seaLevel)
+	//187 223 237  -  Shore (elev >= 25 && elev <= seaLevel)
+	//213 201 160  -  Beach (elev == seaLevel + 1)
+	//--------------------------------------------------------
+	//130 160 109  -  Grassland (med temp, med rain, med< height)
+	//139 196 131  -  Rain (-high temp, good rain, med< height)
+	//198 237 198  -  Tundra (low temp, any rain, med< height)
+	//201 190 153  -  Desert (>high temp, low rain, med< height)
+	//235 235 235  -  Mountain (any temp, any rain, high height)
+	//196 220 130  -  Savanna (high temp, low rain, med height)
+	//136 191 106  -  Plains (everything else)
+	//255 255 255  -  Pole
+	//OTHER: Plains
+
+	sf::Image biome = sf::Image();
+	biome.create(width, height, sf::Color(136, 191, 106));
+
+	for (int x = 0; x < width; x++)
+	{
+		for (int y = 0; y < height; y++)
+		{
+			if (y <= (polarCap + rand() % polarCapRand - (polarCapRand / 2)) ||
+				y >= height - (polarCap + rand() % polarCapRand - (polarCapRand / 2)))
+			{
+				biome.setPixel(x, y, sf::Color(255, 255, 255));
+			}
+			else if (elevation.getPixel(x, y).r <= seaLevel)
+			{
+				if (elevation.getPixel(x, y).r >= 25)
+				{
+					//Shore
+					biome.setPixel(x, y, sf::Color(187, 223, 237));
+				}
+				else
+				{
+					//Ocean
+					biome.setPixel(x, y, sf::Color(128, 164, 177));
+				}
+			}
+			else
+			{
+				if (elevation.getPixel(x, y).r == seaLevel + 1)
+				{
+					//Shore
+					biome.setPixel(x, y, sf::Color(213, 201, 160));
+				}
+				else
+				{
+					//Forest
+					if (elevation.getPixel(x, y).r <= 230)
+					{
+						if (rain.getPixel(x, y).r >= 80 && rain.getPixel(x, y).r <= 210)
+						{
+							if (clim.getPixel(x, y).r >= 70 && clim.getPixel(x, y).r <= 90)
+							{
+								biome.setPixel(x, y, sf::Color(130, 160, 109));
+							}
+						}
+						//Jungle
+						else if (rain.getPixel(x, y).r >= 140)
+						{
+							if (clim.getPixel(x, y).r >= 90)
+							{
+								biome.setPixel(x, y, sf::Color(139, 196, 131));
+							}
+						}
+						else if (rain.getPixel(x, y).r <= 140)
+						{
+							//Desert
+							if (clim.getPixel(x, y).r >= 140)
+							{
+								biome.setPixel(x, y, sf::Color(201, 190, 153));
+							}
+
+							//Savanna
+							if (clim.getPixel(x, y).r >= 80)
+							{
+								biome.setPixel(x, y, sf::Color(196, 220, 130));
+							}
+						}
+					}
+					else if (elevation.getPixel(x, y).r >= 245)
+					{
+						//Mountain 100%
+						biome.setPixel(x, y, sf::Color(235, 235, 235));
+					}
+
+					//Tundra
+					if (clim.getPixel(x, y).r <= 20)
+					{
+						biome.setPixel(x, y, sf::Color(198, 237, 198));
+					}
+
+
+				}
+			}
+		}
+	}
+
+
+
+	//Strategic Resource distribution generation
+	//FOREST (& ANIMALS): GREEN CHANNEL
+	//MINERAL: BLUE CHANNEL
+	//PETROL: RED CHANNEL
+	//URANIUM: ALPHA CHANNEL
+	//If more are to be added create another image
+
+	sf::Image strat = sf::Image();
+	strat.create(width, height, sf::Color::Black);
+
+
+	perlin.SetLacunarity(rand() % 12);
+	perlin.SetFrequency(rand() % 12 + 3);
+
+	perlin2.SetLacunarity(rand() % 6);
+	perlin2.SetFrequency(rand() % 5 + 2);
+
+	ridged.SetFrequency(rand() % 5 + 2);
+	ridged.SetLacunarity(rand() % 10 + 4);
+
+
+	for (int x = 0; x < width; x++)
+	{
+		for (int y = 0; y < height; y++)
+		{
+			//FOREST & MINERALS follow perlin distributions
+			double dX = (double)x / detail;
+			double dY = (double)y / detail;
+
+			double valPd = perlin.GetValue(dX, dY, 12.0);
+			unsigned int valP = ((valPd + 1) / 2) * 255;
+
+			double valRd = ridged.GetValue(dX, dY, 5.0);
+			unsigned int valR = ((valRd + 1) / 2) * 255;
+
+			double valPPd = perlin2.GetValue(dX + seed, dY + seed, 54.0);
+			unsigned int valPP = ((valPPd + 1) / 2) * 255;
+
+			if (elevation.getPixel(x, y).r >= seaLevel)
+			{
+
+				sf::Color c = sf::Color((valPP + valRd / 2), valP, valPP, 255);
+
+				strat.setPixel(x, y, c);
+			}
+		}
+	}
+
+	this->rainfall = rain;
+	this->climate = clim;
+	this->resources = strat;
+	this->biome = biome;
+}
+
 //------------------------------------------------------------------
 
-void World::generate()
+void World::generateA()
 {
 	srand(seed);
 
@@ -327,278 +617,179 @@ void World::generate()
 
 	}
 
-	//Climate generation
+	
 
-	sf::Image clim = sf::Image();
-	clim.create(width, height);
+	this->biome = biome;
+	this->elevation = elev;
 
-	ridged.SetFrequency(mountains);
+	generateGeneric(ridged, perlin, perlin2);
+
+
+}
+
+
+void World::generateB()
+{
+	srand(seed);
+
+
+	sf::Image elev = sf::Image();
+	elev.create(width, height, sf::Color::White);
+
+	//Generate test map
+	noise::module::Perlin perlin;
+	noise::module::RidgedMulti ridged;
+	noise::module::Perlin perlin2;
+
+	perlin.SetSeed(seed);
+	ridged.SetSeed(seed);
+	perlin2.SetSeed(seed);
+
+	perlin.SetFrequency(islands / 2);
+
+	perlin2.SetFrequency(islands / 4);
+	perlin2.SetLacunarity(1.5 / islands);
+
+	ridged.SetFrequency(islands * 5);
+
 
 	for (int x = 0; x < width; x++)
 	{
 		for (int y = 0; y < height; y++)
 		{
-
-			unsigned int val = 0;
-			if (y > height / 2)
+			if (x >= 12 && x <= width - 12)
 			{
-				val = height - y;
+				//Generate half the map
+				double dX = (double)x / detail;
+				double dY = (double)y / detail;
+
+				double valPd = perlin.GetValue(dX, dY, 12.0);
+				unsigned int valP = ((valPd + 1) / 2) * 255;
+
+				double valRd = ridged.GetValue(dX, dY, 5.0);
+				unsigned int valR = ((valRd + 1) / 2) * 255;
+
+				double valPPd = perlin2.GetValue(dX + seed, dY + seed, 54.0);
+				unsigned int valPP = ((valPPd + 1) / 2) * 255;
+
+				unsigned int val = (valPP + valP + valR) / 3;
+
+
+
+				if (val > seaLevel * 1.2)
+				{
+					unsigned int pval = val;
+					val += 32 * (valRd * mountains);
+					val %= 255;
+					if (pval > val)
+					{
+						val = pval;
+					}
+				}
+
+				if (val < seaLevel)
+				{
+					val += valRd * connection;
+					val %= 255;
+				}
+
+
+				if (val < seaLevel)
+				{
+					val = 0;
+				}
+
+				if (y <= (polarCap + rand() % polarCapRand - (polarCapRand / 2)) ||
+					y >= height - (polarCap + rand() % polarCapRand - (polarCapRand / 2)))
+				{
+					val = seaLevel + 20;
+				}
+
+				elev.setPixel(x, y, sf::Color(val, val, val, 255));
 			}
 			else
 			{
-				val = y;
-			}
-
-			val *= 1.9;
-
-			clim.setPixel(x, y, sf::Color(val, val, val, 255));
-		}
-	}
-
-	//Add some noise
-	for (int x = 0; x < width; x++)
-	{
-		for (int y = 0; y < height; y++)
-		{
-
-			unsigned int val = clim.getPixel(x, y).r;
-			double dval = perlin.GetValue(x, y, 24.53) * 30.0;
-			val = (val + dval) / 2;
-			clim.setPixel(x, y, sf::Color(val, val, val, 255));
-		}
-	}
-
-	//-----------------------------------------------
-	//Rainfall
-
-	//Every sea tile creates rainfall, it moves right until it mets a tile
-	//higher than 1.4 sealevel
-
-	//Basically, for each x we will check until we meet a square and cut rainfall
-
-	sf::Image rain = sf::Image();
-	rain.create(width, height, sf::Color::White);
-
-
-	for (int y = 0; y < height; y++)
-	{
-		int count = 0;
-		for (int x = 0; x < width; x++)
-		{
-			if (count <= 0)
-			{
-				if (elev.getPixel(x, y).r >= seaLevel * 1.4)
+				if (rand() % 1000 >= 4 * islands)
 				{
-					count = 80;
-				}
-			}
-			else
-			{
-				if (elev.getPixel(x, y).r >= seaLevel * 1.4)
-				{
-					count += 60;
-				}
-				count--;
-				rain.setPixel(x, y, sf::Color(255 - count, 255 - count, 255 - count));
-			}
-		}
-	}
-
-
-
-	//Generate shores & beaches (basic cellular automata)
-
-	sf::Image outim = elev;
-
-	for (int x = 0; x < width; x++)
-	{
-		for (int y = 0; y < height; y++)
-		{
-
-			//Lone pixels may get deleted
-			if (getSurrounding(elev, x, y) <= 1)
-			{
-				if (rand() % 1000 >= 250)
-				{
-					elev.setPixel(x, y, sf::Color::Black);
-				}
-			}
-
-			//If a pixel is not fully surrounded its beach
-			if (getSurrounding(elev, x, y) <= 3 && getSurrounding(elev, x, y) >= 1)
-			{
-				outim.setPixel(x, y, sf::Color(seaLevel + 1, seaLevel + 1, seaLevel + 1));
-			}
-
-			//If a pixel is closer than 3 pixels to something then it's shore
-			if (getSurrounding(elev, x, y, 4) >= 1 && elev.getPixel(x, y).r <= seaLevel)
-			{
-				outim.setPixel(x, y, sf::Color(seaLevel - 50, seaLevel - 50, seaLevel - 50));
-			}
-
-
-		}
-	}
-	elev = outim;
-
-
-	//Generate biome map
-	//BY RGB 
-	//128 164 177  -  Ocean (elev <= seaLevel)
-	//187 223 237  -  Shore (elev >= 25 && elev <= seaLevel)
-	//213 201 160  -  Beach (elev == seaLevel + 1)
-	//--------------------------------------------------------
-	//130 160 109  -  Grassland (med temp, med rain, med< height)
-	//139 196 131  -  Rain (-high temp, good rain, med< height)
-	//198 237 198  -  Tundra (low temp, any rain, med< height)
-	//201 190 153  -  Desert (>high temp, low rain, med< height)
-	//235 235 235  -  Mountain (any temp, any rain, high height)
-	//196 220 130  -  Savanna (high temp, low rain, med height)
-	//136 191 106  -  Plains (everything else)
-	//255 255 255  -  Pole
-	//OTHER: Plains
-
-	sf::Image biome = sf::Image();
-	biome.create(width, height, sf::Color(136, 191, 106));
-
-	for (int x = 0; x < width; x++)
-	{
-		for (int y = 0; y < height; y++)
-		{
-			if (y <= (polarCap + rand() % polarCapRand - (polarCapRand / 2)) || 
-				y >= height - (polarCap + rand() % polarCapRand - (polarCapRand / 2)))
-			{
-				biome.setPixel(x, y, sf::Color(255, 255, 255));
-			}
-			else if (elev.getPixel(x, y).r <= seaLevel)
-			{
-				if (elev.getPixel(x, y).r >= 25)
-				{
-					//Shore
-					biome.setPixel(x, y, sf::Color(187, 223, 237));
+					elev.setPixel(x, y, sf::Color(0, 0, 0));
 				}
 				else
 				{
-					//Ocean
-					biome.setPixel(x, y, sf::Color(128, 164, 177));
+					elev.setPixel(x, y, sf::Color(seaLevel + 4, seaLevel + 4, seaLevel + 4));
 				}
-			}
-			else
-			{
-				if (elev.getPixel(x, y).r == seaLevel + 1)
-				{
-					//Shore
-					biome.setPixel(x, y, sf::Color(213, 201, 160));
-				}
-				else
-				{
-					//Forest
-					if (elev.getPixel(x, y).r <= 230)
-					{
-						if (rain.getPixel(x, y).r >= 80 && rain.getPixel(x, y).r <= 210)
-						{
-							if (clim.getPixel(x, y).r >= 70 && clim.getPixel(x, y).r <= 90)
-							{
-								biome.setPixel(x, y, sf::Color(130, 160, 109));
-							}
-						}
-						//Jungle
-						else if (rain.getPixel(x, y).r >= 140)
-						{
-							if (clim.getPixel(x, y).r >= 90)
-							{
-								biome.setPixel(x, y, sf::Color(139, 196, 131));
-							}
-						}
-						else if (rain.getPixel(x, y).r <= 140)
-						{
-							//Desert
-							if (clim.getPixel(x, y).r >= 140)
-							{
-								biome.setPixel(x, y, sf::Color(201, 190, 153));
-							}
-
-							//Savanna
-							if (clim.getPixel(x, y).r >= 80)
-							{
-								biome.setPixel(x, y, sf::Color(196, 220, 130));
-							}
-						}
-					}
-					else if (elev.getPixel(x, y).r >= 245)
-					{
-						//Mountain 100%
-						biome.setPixel(x, y, sf::Color(235, 235, 235));
-					}
-
-					//Tundra
-					if (clim.getPixel(x, y).r <= 20)
-					{
-						biome.setPixel(x, y, sf::Color(198, 237, 198));
-					}
-
-
-				}
-			}
-		}
-	}
-
-
-
-	//Strategic Resource distribution generation
-	//FOREST (& ANIMALS): GREEN CHANNEL
-	//MINERAL: BLUE CHANNEL
-	//PETROL: RED CHANNEL
-	//URANIUM: ALPHA CHANNEL
-	//If more are to be added create another image
-
-	sf::Image strat = sf::Image();
-	strat.create(width, height, sf::Color::Black);
-
-
-	perlin.SetLacunarity(rand() % 12);
-	perlin.SetFrequency(rand() % 12 + 3);
-
-	perlin2.SetLacunarity(rand() % 6);
-	perlin2.SetFrequency(rand() % 5 + 2);
-
-	ridged.SetFrequency(rand() % 5 + 2);
-	ridged.SetLacunarity(rand() % 10 + 4);
-
-	for (int x = 0; x < width; x++)
-	{
-		for (int y = 0; y < height; y++)
-		{
-			//FOREST & MINERALS follow perlin distributions
-			double dX = (double)x / detail;
-			double dY = (double)y / detail;
-
-			double valPd = perlin.GetValue(dX, dY, 12.0);
-			unsigned int valP = ((valPd + 1) / 2) * 255;
-
-			double valRd = ridged.GetValue(dX, dY, 5.0);
-			unsigned int valR = ((valRd + 1) / 2) * 255;
-
-			double valPPd = perlin2.GetValue(dX + seed, dY + seed, 54.0);
-			unsigned int valPP = ((valPPd + 1) / 2) * 255;
-
-			if (elev.getPixel(x, y).r >= seaLevel)
-			{
-
-				sf::Color c = sf::Color((valPP + valRd / 2), valP, valPP, 255);
-
-				strat.setPixel(x, y, c);
 			}
 		}
 	}
 
 	this->biome = biome;
 	this->elevation = elev;
-	this->rainfall = rain;
-	this->climate = clim;
-	this->resources = strat;
-
+	
+	generateGeneric(ridged, perlin, perlin2);
 }
+
+void World::saveToFile(std::string path)
+{
+	std::cout << "Serializing world: " << name << std::endl;
+	Json::Value root;
+	root["name"] = name;
+	root["type"] = type;
+	root["seed"] = seed;
+	root["width"] = width;
+	root["height"] = height;
+	root["detail"] = detail;
+	root["connection"] = connection;
+	root["mountains"] = mountains;
+	root["seaLevel"] = seaLevel;
+	root["smooth"] = smooth;
+	root["islands"] = islands;
+	root["polarCap"] = polarCap;
+	root["polarCapRand"] = polarCapRand;
+	root["rivers"] = rivers;
+	root["invert"] = invert;
+	std::cout << root << std::endl;
+	std::ofstream file;
+	file.open(path);
+	file << root << std::endl;
+	file.close();
+	std::cout << "------------------------------" << std::endl;
+}
+
+bool World::load(std::string path)
+{
+	std::cout << "Loading world file..." << std::endl;
+	JSONLoader loader = JSONLoader();
+	Json::Value root;
+	if (loader.loadFile(path, root, false))
+	{
+
+		name = root["name"].asString();
+		type = (WorldType)(root["type"].asInt());
+		seed = root["seed"].asUInt();
+		width = root["width"].asInt();
+		height = root["height"].asInt();
+		detail = root["detail"].asFloat();
+		connection = root["connection"].asFloat();
+		mountains = root["mountain"].asFloat();
+		seaLevel = root["seaLevel"].asInt();
+		smooth = root["smooth"].asBool();
+		islands = root["islands"].asFloat();
+		polarCap = root["polarCap"].asInt();
+		polarCapRand = root["polarCapRand"].asInt();
+		rivers = root["rivers"].asFloat();
+		invert = root["invert"].asBool();
+		std::cout << "Done!" << std::endl;
+
+		generate(type);
+
+		return true;
+	}
+	else
+	{
+		std::cout << "Error loading file! Abort!" << std::endl;
+		return false;
+	}
+}
+
 
 World::World()
 {
