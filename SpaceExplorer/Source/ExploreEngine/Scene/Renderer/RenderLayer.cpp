@@ -1,12 +1,13 @@
 #include "RenderLayer.h"
+#include <iostream>
 
 using namespace Explore;
 
 void RenderLayer::draw(sf::RenderWindow* w)
 {
-	for (sf::Sprite* s : sprites)
+	for (Sprite s : sprites)
 	{
-		w->draw(*s);
+		w->draw(s.s);
 	}
 }
 

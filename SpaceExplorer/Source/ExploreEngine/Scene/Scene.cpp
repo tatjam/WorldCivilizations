@@ -1,4 +1,5 @@
 #include "Scene.h"
+#include <iostream>
 
 using namespace Explore;
 
@@ -49,6 +50,7 @@ void Scene::draw(sf::RenderWindow* w)
 
 Scene::Scene()
 {
+
 }
 
 

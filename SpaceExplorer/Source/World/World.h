@@ -24,10 +24,17 @@ public:
 	float islands = 0.15;
 	int polarCap = 10;
 	int polarCapRand = 10;
-
+	float rivers = 10;
+	bool invert = false;
 
 	//Generates map to images from given data
+	//(Type A, uglier but sometimes better gameplay)
 	void generate();
+
+	//Generates map to images from given data
+	//(Type B, Earth like, does not
+	//wrap around, but just has oceans around)
+	void generateB();
 
 	//Writes file data to a ASCII file
 	void saveToFile(std::string path);

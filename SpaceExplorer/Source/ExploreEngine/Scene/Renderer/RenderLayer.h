@@ -13,7 +13,7 @@ namespace Explore
 	{
 	public:
 
-		std::vector<Sprite*> sprites;
+		std::vector<Sprite> sprites;
 
 		//Z is used only when inserting, changing it will do nothing
 		int z = 0;

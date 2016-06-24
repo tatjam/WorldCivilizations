@@ -1,0 +1,15 @@
+[
+	{
+	  "forestTile": "res/art/tiles/forest.png",
+	  "desertTile": "res/art/tiles/desert.png",
+	  "jungleTile": "res/art/tiles/jungle.png",
+	  "mountainTile": "res/art/tiles/mountain.png",
+	  "plainsTile": "res/art/tiles/plains.png",
+	  "savannaTile": "res/art/tiles/savanna.png",
+	  "tundraTile": "res/art/tiles/tundra.png",
+	  "oceanTile": "res/art/tiles/ocean.png",
+	  "shoreTile": "res/art/tiles/shore.png",
+	  "beachTile": "res/art/tiles/beach.png",
+	  "poleTile": "res/art/tiles/pole.png"
+	}
+]

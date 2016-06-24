@@ -6,12 +6,11 @@
 #include "../dirent/dirent.h"
 
 #include <string>
-#include <fstream>
-#include <streambuf>
 #include "Asset/AssetManager.h"
 
 namespace Explore
 {
+
 	class Scene;
 
 	class Engine
@@ -19,7 +18,7 @@ namespace Explore
 
 	public:
 
-		sf::RenderWindow window;
+		sf::RenderWindow* window;
 
 		Scene* scene;
 

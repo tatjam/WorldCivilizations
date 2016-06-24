@@ -84,6 +84,8 @@
     <Link>
       <AdditionalLibraryDirectories>D:\Programming\LibNoise\bin;D:\Programming\SFML\SFML-2.3.2\SFML-2.3.2\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>sfml-graphics-d.lib;sfml-system-d.lib;sfml-window-d.lib;sfml-audio-d.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)libnoise.lib;</AdditionalDependencies>
+      <ImageHasSafeExceptionHandlers>false</ImageHasSafeExceptionHandlers>
+      <CLRImageType>Default</CLRImageType>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -107,6 +109,7 @@
       <OptimizeReferences>true</OptimizeReferences>
       <AdditionalLibraryDirectories>D:\Programming\LibNoise\bin;D:\Programming\SFML\SFML-2.3.2\SFML-2.3.2\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>sfml-system.lib;sfml-window.lib;sfml-graphics.lib;sfml-audio.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)libnoise.lib;</AdditionalDependencies>
+      <ImageHasSafeExceptionHandlers>false</ImageHasSafeExceptionHandlers>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -123,22 +126,30 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Source\ExploreEngine\Asset\AssetManager.cpp" />
     <ClCompile Include="Source\ExploreEngine\Scene\Renderer\RenderLayer.cpp" />
     <ClCompile Include="Source\ExploreEngine\Scene\Scene.cpp" />
     <ClCompile Include="Source\ExploreEngine\Entity\Entity.cpp" />
     <ClCompile Include="Source\ExploreEngine\Engine.cpp" />
+    <ClCompile Include="Source\json\jsoncpp.cpp" />
     <ClCompile Include="Source\Main.cpp" />
-    <ClCompile Include="World.cpp" />
+    <ClCompile Include="Source\World\World.cpp" />
+    <ClCompile Include="Source\World\WorldRenderer.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Source\ExploreEngine\Asset\AssetManager.h" />
     <ClInclude Include="Source\ExploreEngine\Scene\Renderer\RenderLayer.h" />
     <ClInclude Include="Source\ExploreEngine\Scene\Scene.h" />
     <ClInclude Include="Source\ExploreEngine\Entity\Entity.h" />
     <ClInclude Include="Source\ExploreEngine\Engine.h" />
-    <ClInclude Include="World.h" />
+    <ClInclude Include="Source\json\json\json-forwards.h" />
+    <ClInclude Include="Source\json\json\json.h" />
+    <ClInclude Include="Source\json\Loader.h" />
+    <ClInclude Include="Source\World\World.h" />
+    <ClInclude Include="Source\World\WorldRenderer.h" />
+    <ClInclude Include="Source\ExploreEngine\Sprite.h" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="res\settings.json" />
     <None Include="save\example.json" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

@@ -1,7 +1,5 @@
 #pragma once
 #include "Renderer/RenderLayer.h"
-#include "../Engine.h"
-
 #include <vector>
 #include <map>
 
@@ -10,9 +8,6 @@ namespace Explore
 	class Scene
 	{
 	public:
-
-		Engine* engine;
-
 
 		std::map<int, RenderLayer> layers;
 

@@ -1,4 +1,5 @@
 #include "Engine.h"
+#include "Scene/Scene.h"
 
 using namespace Explore;
 
@@ -11,7 +12,7 @@ bool Engine::update()
 
 void Engine::draw()
 {
-	scene->draw(&window);
+	scene->draw(window);
 }
 
 void Engine::setup()
@@ -28,6 +29,7 @@ void Engine::setup()
 
 Engine::Engine()
 {
+
 }
 
 
