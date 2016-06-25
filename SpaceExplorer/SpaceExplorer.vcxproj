@@ -135,6 +135,7 @@
     <ClCompile Include="Source\Main.cpp" />
     <ClCompile Include="Source\World\World.cpp" />
     <ClCompile Include="Source\World\WorldRenderer.cpp" />
+    <ClCompile Include="Source\Unit\Unit.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Source\ExploreEngine\Asset\AssetManager.h" />
@@ -148,6 +149,7 @@
     <ClInclude Include="Source\World\World.h" />
     <ClInclude Include="Source\World\WorldRenderer.h" />
     <ClInclude Include="Source\ExploreEngine\Sprite.h" />
+    <ClInclude Include="Source\Unit\Unit.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="save\example.json" />

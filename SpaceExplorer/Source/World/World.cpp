@@ -72,7 +72,8 @@ void World::generateGeneric(noise::module::RidgedMulti ridged,
 	sf::Image clim = sf::Image();
 	clim.create(width, height);
 
-	ridged.SetFrequency(mountains);
+	ridged.SetFrequency(4.5);
+	ridged.SetLacunarity(1.0);
 
 	for (int x = 0; x < width; x++)
 	{
@@ -89,7 +90,9 @@ void World::generateGeneric(noise::module::RidgedMulti ridged,
 				val = y;
 			}
 
-			val *= 1.9;
+
+
+			val *= 2;
 
 			clim.setPixel(x, y, sf::Color(val, val, val, 255));
 		}
@@ -101,9 +104,13 @@ void World::generateGeneric(noise::module::RidgedMulti ridged,
 		for (int y = 0; y < height; y++)
 		{
 
+
 			unsigned int val = clim.getPixel(x, y).r;
-			double dval = perlin.GetValue(x, y, 24.53) * 30.0;
-			val = (val + dval) / 2;
+
+			double dval = ridged.GetValue(x, y, 24.53) * 5.0;
+			val = val + dval;
+
+	
 			clim.setPixel(x, y, sf::Color(val, val, val, 255));
 		}
 	}
@@ -127,28 +134,36 @@ void World::generateGeneric(noise::module::RidgedMulti ridged,
 		{
 			if (count <= 0)
 			{
-				if (elevation.getPixel(x, y).r >= seaLevel * 1.4)
+				if (getSurrounding(heightmap, x, y, 2) <= 3 && rand() % 1000 >= 500)
 				{
 					count = 80;
 				}
+				rain.setPixel(x, y, sf::Color(255 - count, 255 - count, 255 - count));
 			}
 			else
 			{
-				if (elevation.getPixel(x, y).r >= seaLevel * 1.4)
+				if (heightmap.getPixel(x, y).r >= seaLevel * (1.4))
 				{
 					count += 60;
 				}
 				count--;
 				rain.setPixel(x, y, sf::Color(255 - count, 255 - count, 255 - count));
+				
+			}
+
+			if (rand() % 1000 >= 700)
+			{
+				sf::Uint8 val = rain.getPixel(x, y).r;
+				val /= 2;
+
+				rain.setPixel(x, y, sf::Color(val, val, val));
 			}
 		}
 	}
 
-
-
 	//Generate shores & beaches (basic cellular automata)
 
-	sf::Image outim = elevation;
+	sf::Image outim = heightmap;
 
 	for (int x = 0; x < width; x++)
 	{
@@ -156,22 +171,22 @@ void World::generateGeneric(noise::module::RidgedMulti ridged,
 		{
 
 			//Lone pixels may get deleted
-			if (getSurrounding(elevation, x, y) <= 1)
+			if (getSurrounding(heightmap, x, y) <= 1)
 			{
 				if (rand() % 1000 >= 250)
 				{
-					elevation.setPixel(x, y, sf::Color::Black);
+					heightmap.setPixel(x, y, sf::Color::Black);
 				}
 			}
 
 			//If a pixel is not fully surrounded its beach
-			if (getSurrounding(elevation, x, y) <= 3 && getSurrounding(elevation, x, y) >= 1)
+			if (getSurrounding(heightmap, x, y) <= 3 && getSurrounding(heightmap, x, y) >= 1)
 			{
 				outim.setPixel(x, y, sf::Color(seaLevel + 1, seaLevel + 1, seaLevel + 1));
 			}
 
 			//If a pixel is closer than 3 pixels to something then it's shore
-			if (getSurrounding(elevation, x, y, 4) >= 1 && elevation.getPixel(x, y).r <= seaLevel)
+			if (getSurrounding(heightmap, x, y, 4) >= 1 && heightmap.getPixel(x, y).r <= seaLevel)
 			{
 				outim.setPixel(x, y, sf::Color(seaLevel - 50, seaLevel - 50, seaLevel - 50));
 			}
@@ -179,7 +194,7 @@ void World::generateGeneric(noise::module::RidgedMulti ridged,
 
 		}
 	}
-	elevation = outim;
+	heightmap = outim;
 
 
 	//Generate biome map
@@ -210,9 +225,9 @@ void World::generateGeneric(noise::module::RidgedMulti ridged,
 			{
 				biome.setPixel(x, y, sf::Color(255, 255, 255));
 			}
-			else if (elevation.getPixel(x, y).r <= seaLevel)
+			else if (heightmap.getPixel(x, y).r <= seaLevel)
 			{
-				if (elevation.getPixel(x, y).r >= 25)
+				if (heightmap.getPixel(x, y).r >= 25)
 				{
 					//Shore
 					biome.setPixel(x, y, sf::Color(187, 223, 237));
@@ -225,7 +240,7 @@ void World::generateGeneric(noise::module::RidgedMulti ridged,
 			}
 			else
 			{
-				if (elevation.getPixel(x, y).r == seaLevel + 1)
+				if (heightmap.getPixel(x, y).r == seaLevel + 1)
 				{
 					//Shore
 					biome.setPixel(x, y, sf::Color(213, 201, 160));
@@ -233,7 +248,7 @@ void World::generateGeneric(noise::module::RidgedMulti ridged,
 				else
 				{
 					//Forest
-					if (elevation.getPixel(x, y).r <= 230)
+					if (heightmap.getPixel(x, y).r <= 230)
 					{
 						if (rain.getPixel(x, y).r >= 80 && rain.getPixel(x, y).r <= 210)
 						{
@@ -243,14 +258,19 @@ void World::generateGeneric(noise::module::RidgedMulti ridged,
 							}
 						}
 						//Jungle
-						else if (rain.getPixel(x, y).r >= 140)
+						else if (rain.getPixel(x, y).r >= 170)
 						{
-							if (clim.getPixel(x, y).r >= 90)
+							if (clim.getPixel(x, y).r <= 120)
 							{
 								biome.setPixel(x, y, sf::Color(139, 196, 131));
 							}
+							else
+							{
+								//Desert otherwise
+								biome.setPixel(x, y, sf::Color(201, 190, 153));
+							}
 						}
-						else if (rain.getPixel(x, y).r <= 140)
+						else if (rain.getPixel(x, y).r <= 170)
 						{
 							//Desert
 							if (clim.getPixel(x, y).r >= 140)
@@ -259,13 +279,13 @@ void World::generateGeneric(noise::module::RidgedMulti ridged,
 							}
 
 							//Savanna
-							if (clim.getPixel(x, y).r >= 80)
+							if (clim.getPixel(x, y).r >= 50)
 							{
 								biome.setPixel(x, y, sf::Color(196, 220, 130));
 							}
 						}
 					}
-					else if (elevation.getPixel(x, y).r >= 245)
+					else if (heightmap.getPixel(x, y).r >= 245)
 					{
 						//Mountain 100%
 						biome.setPixel(x, y, sf::Color(235, 235, 235));
@@ -286,7 +306,7 @@ void World::generateGeneric(noise::module::RidgedMulti ridged,
 
 
 	//Strategic Resource distribution generation
-	//FOREST (& ANIMALS): GREEN CHANNEL
+	//FOREST: GREEN CHANNEL
 	//MINERAL: BLUE CHANNEL
 	//PETROL: RED CHANNEL
 	//URANIUM: ALPHA CHANNEL
@@ -323,7 +343,7 @@ void World::generateGeneric(noise::module::RidgedMulti ridged,
 			double valPPd = perlin2.GetValue(dX + seed, dY + seed, 54.0);
 			unsigned int valPP = ((valPPd + 1) / 2) * 255;
 
-			if (elevation.getPixel(x, y).r >= seaLevel)
+			if (heightmap.getPixel(x, y).r >= seaLevel)
 			{
 
 				sf::Color c = sf::Color((valPP + valRd / 2), valP, valPP, 255);
@@ -333,10 +353,39 @@ void World::generateGeneric(noise::module::RidgedMulti ridged,
 		}
 	}
 
+	//Generate height data map 
+	//0, 0, 0         -  Normal Land
+	//128, 128, 128   -  Hill Land
+	//255, 255, 255   -  Mountain Land
+
+	sf::Image elev = sf::Image();
+	elev.create(width, height);
+
+	for (int x = 0; x < width; x++)
+	{
+		for (int y = 0; y < height; y++)
+		{
+			unsigned int val = heightmap.getPixel(x, y).r;
+			if (val >= 230 && val <= 240) 
+			{
+				elev.setPixel(x, y, sf::Color(128, 128, 128));
+			}
+			else if (val >= 240)
+			{
+				elev.setPixel(x, y, sf::Color(255, 255, 255));
+			}
+			else
+			{
+				elev.setPixel(x, y, sf::Color(0, 0, 0));
+			}
+		}
+	}
+
 	this->rainfall = rain;
 	this->climate = clim;
 	this->resources = strat;
 	this->biome = biome;
+	this->elev = elev;
 }
 
 //------------------------------------------------------------------
@@ -358,9 +407,9 @@ void World::generateA()
 	ridged.SetSeed(seed);
 	perlin2.SetSeed(seed);
 
-	perlin.SetFrequency(islands);
+	perlin.SetFrequency(islands / 100);
 
-	perlin2.SetFrequency(islands * 2);
+	perlin2.SetFrequency(islands * 2 / 100);
 	perlin2.SetLacunarity(1.5);
 
 	ridged.SetFrequency(islands * 5);
@@ -620,7 +669,7 @@ void World::generateA()
 	
 
 	this->biome = biome;
-	this->elevation = elev;
+	this->heightmap = elev;
 
 	generateGeneric(ridged, perlin, perlin2);
 
@@ -645,71 +694,96 @@ void World::generateB()
 	ridged.SetSeed(seed);
 	perlin2.SetSeed(seed);
 
-	perlin.SetFrequency(islands / 2);
+	perlin.SetFrequency(connection / 10);
 
-	perlin2.SetFrequency(islands / 4);
-	perlin2.SetLacunarity(1.5 / islands);
+	perlin2.SetFrequency(4 / 10 * (connection / 2));
+	perlin2.SetLacunarity(1.5 / islands / 10);
 
-	ridged.SetFrequency(islands * 5);
+	ridged.SetFrequency(islands * 5 / 100);
 
 
 	for (int x = 0; x < width; x++)
 	{
 		for (int y = 0; y < height; y++)
 		{
-			if (x >= 12 && x <= width - 12)
+			if (x >= width / 50 + 2 && x <= width - (width / 50 + 2))
 			{
-				//Generate half the map
-				double dX = (double)x / detail;
-				double dY = (double)y / detail;
-
-				double valPd = perlin.GetValue(dX, dY, 12.0);
-				unsigned int valP = ((valPd + 1) / 2) * 255;
-
-				double valRd = ridged.GetValue(dX, dY, 5.0);
-				unsigned int valR = ((valRd + 1) / 2) * 255;
-
-				double valPPd = perlin2.GetValue(dX + seed, dY + seed, 54.0);
-				unsigned int valPP = ((valPPd + 1) / 2) * 255;
-
-				unsigned int val = (valPP + valP + valR) / 3;
-
-
-
-				if (val > seaLevel * 1.2)
+				if (y >= height / 20 + 2 + polarCap && y <= height - (height / 20 + 2 + polarCap))
 				{
-					unsigned int pval = val;
-					val += 32 * (valRd * mountains);
-					val %= 255;
-					if (pval > val)
+
+
+					//Generate half the map
+					double dX = (double)x / detail;
+					double dY = (double)y / detail;
+
+					double valPd = perlin.GetValue(dX, dY, 12.0);
+					unsigned int valP = ((valPd + 1) / 2) * 255;
+
+					double valRd = ridged.GetValue(dX, dY, 5.0);
+					unsigned int valR = ((valRd + 1) / 2) * 255;
+
+					double oldfreq = ridged.GetFrequency();
+					ridged.SetFrequency(connection);
+
+					double valRdd = ridged.GetValue(dX * 4 + 5, dY * 23 + 4, 5.0);
+					unsigned int valRdv = ((valRd + 1) / 2) * 255;
+
+					ridged.SetFrequency(oldfreq);
+
+
+					double valPPd = perlin2.GetValue(dX + seed, dY + seed, 54.0);
+					unsigned int valPP = ((valPPd + 1) / 2) * 255;
+
+					unsigned int val = (valP + valPP + valR - valRdv) / 2.2;
+
+
+
+					if (val > seaLevel * 1.2)
 					{
-						val = pval;
+						unsigned int pval = val;
+						val += 32 * (valRd * mountains);
+						val %= 255;
+						if (pval > val)
+						{
+							val = pval;
+						}
+					}
+
+					if (val < seaLevel)
+					{
+						val += valRd * connection;
+						val %= 255;
+					}
+
+
+					if (val < seaLevel)
+					{
+						val = 0;
+					}
+
+					if (y <= (polarCap + rand() % polarCapRand - (polarCapRand / 2)) ||
+						y >= height - (polarCap + rand() % polarCapRand - (polarCapRand / 2)))
+					{
+						val = seaLevel + 20;
+					}
+
+					elev.setPixel(x, y, sf::Color(val, val, val, 255));
+				}
+				else
+				{
+					if (rand() % 1000 <= 1000 - islands)
+					{
+						elev.setPixel(x, y, sf::Color(0, 0, 0));
+					}
+					else
+					{
+						elev.setPixel(x, y, sf::Color(seaLevel + 4, seaLevel + 4, seaLevel + 4));
 					}
 				}
-
-				if (val < seaLevel)
-				{
-					val += valRd * connection;
-					val %= 255;
-				}
-
-
-				if (val < seaLevel)
-				{
-					val = 0;
-				}
-
-				if (y <= (polarCap + rand() % polarCapRand - (polarCapRand / 2)) ||
-					y >= height - (polarCap + rand() % polarCapRand - (polarCapRand / 2)))
-				{
-					val = seaLevel + 20;
-				}
-
-				elev.setPixel(x, y, sf::Color(val, val, val, 255));
 			}
 			else
 			{
-				if (rand() % 1000 >= 4 * islands)
+				if (rand() % 1000 <= 1000 - islands)
 				{
 					elev.setPixel(x, y, sf::Color(0, 0, 0));
 				}
@@ -722,7 +796,7 @@ void World::generateB()
 	}
 
 	this->biome = biome;
-	this->elevation = elev;
+	this->heightmap = elev;
 	
 	generateGeneric(ridged, perlin, perlin2);
 }

@@ -13,6 +13,18 @@ bool checkString(std::string data, std::string check)
 	return true;
 }
 
+std::map<std::string, sf::Texture> AssetManager::getAllTextures()
+{
+	std::map<std::string, sf::Texture> nmap = std::map<std::string, sf::Texture>();
+
+	for (auto const key : images)
+	{
+		nmap[key.first] = getTexture(key.first);
+	}
+
+	return nmap;
+}
+
 Sprite AssetManager::getSprite(std::string s)
 {
 	Sprite sp = Sprite();

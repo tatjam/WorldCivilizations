@@ -22,6 +22,9 @@ namespace Explore
 
 		sf::Texture getTexture(std::string s);
 
+		//Returns a std::map with all the textures COPIED
+		std::map<std::string, sf::Texture> getAllTextures();
+
 		AssetManager();
 		~AssetManager();
 	};

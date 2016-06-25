@@ -1,0 +1,18 @@
+{
+
+        "connection" : 202,
+        "detail" : 250,
+        "height" : 64,
+        "invert" : false,
+        "islands" : 15,
+        "mountains" : 6.5,
+        "name" : "SET",
+        "polarCap" : 3,
+        "polarCapRand" : 2,
+        "rivers" : 40,
+        "seaLevel" : 140,
+        "seed" : 124324,
+        "smooth" : true,
+        "type" : 1,
+        "width" : 128
+}
