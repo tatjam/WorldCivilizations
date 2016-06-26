@@ -20,6 +20,7 @@ private:
 		noise::module::Perlin perlin, noise::module::Perlin perlin2);
 public:
 
+
 	sf::Image heightmap;
 	sf::Image elev;
 	sf::Image rainfall;

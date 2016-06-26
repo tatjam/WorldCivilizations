@@ -17,7 +17,7 @@ int main()
 	std::vector<Unit*> units;
 	units.push_back(&testUnit);
 
-	sf::RenderWindow window(sf::VideoMode(512, 512), "SFML works!");
+	sf::RenderWindow window(sf::VideoMode(1024, 1024), "SFML works!");
 	window.setFramerateLimit(60);
 
 	AssetManager manager = AssetManager();
@@ -65,7 +65,7 @@ int main()
 	sf::Sprite sp = sf::Sprite();
 	sf::Texture tex = sf::Texture();
 
-	tex.loadFromImage(world.moveCost);
+	tex.loadFromImage(world.biome);
 	sp.setTexture(tex);
 	sp.setScale(2, 2);
 	tex.setSmooth(false);
@@ -91,6 +91,10 @@ int main()
 		{
 			if (event.type == sf::Event::Closed)
 				window.close();
+			if(event.type == sf::Event::Resized)
+			{
+				view.reset(sf::FloatRect(0, 0, event.size.width, event.size.height));
+			}
 		}
 
 		if (testView.left < 0)

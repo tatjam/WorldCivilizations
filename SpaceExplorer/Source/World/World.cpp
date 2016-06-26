@@ -381,6 +381,243 @@ void World::generateGeneric(noise::module::RidgedMulti ridged,
 		}
 	}
 
+	//Run rivers
+	std::cout << "Running rivers!" << std::endl;
+
+	sf::Clock abortClock = sf::Clock();
+
+	sf::Image tmpRiver = sf::Image();
+	tmpRiver.create(width, height);
+
+	int riversPlaced = 0;
+	while (riversPlaced < rivers)
+	{
+		bool valid = false;
+		int x = rand() % width;
+		int y = rand() % (height - polarCap * 2) + polarCap * 2;
+		int length = rand() % width / 1.5;
+		//Get random location on map
+		while (!valid)
+		{
+			if (abortClock.getElapsedTime().asSeconds() >= 2)
+			{
+				std::cout << "River generation abort (timeout)!";
+				valid = true;
+			}
+			x = rand() % width;
+			y = rand() % (height - polarCap * 2) + polarCap * 2;
+			if (getSurrounding(heightmap, 
+				x, y, 4) >= 9 && heightmap.getPixel(x, y).r <= seaLevel)
+			{
+				valid = true;
+			}
+		}
+		
+
+		x %= width;
+		y %= height;
+
+		int placedTiles = 0;
+		int xstraight = 0;
+		int ystraight = 0;
+
+		bool xpos = false;
+		bool ypos = false;
+		while (placedTiles < length)
+		{
+			bool valid = false;
+			while (!valid)
+			{
+
+				if (abortClock.getElapsedTime().asSeconds() >= 2)
+				{
+					std::cout << "River generation abort (timeout)!";
+					valid = true;
+				}
+
+				//Drunk walk algorithm
+
+
+				if (xstraight >= length / 2 || rand() % 1000 >= 990)
+				{
+					xpos = !xpos;
+					xstraight = 0;
+				}
+				else
+				{
+					xstraight++;
+				}
+
+				if (ystraight >= length / 3 || rand() % 1000 >= 999)
+				{
+					ypos = !ypos;
+					ystraight = 0;
+				}
+				else
+				{
+					xstraight++;
+				}
+
+				if (xpos && ypos)
+				{
+					if (rand() % 1000 >= 500)
+					{
+						xpos = false;
+					}
+					else
+					{
+						ypos = false;
+					}
+				}
+
+				if (!xpos && !ypos)
+				{
+					if (rand() % 1000 >= 500)
+					{
+						xpos = true;
+					}
+					else
+					{
+						ypos = true;
+					}
+				}
+
+
+				if (xpos)
+				{
+					x += rand() % 2 - 1;
+				}
+				else
+				{
+					x -= rand() % 2 - 1;
+				}
+
+
+			
+
+				if (ypos)
+				{
+					y += rand() % 2 - 1;
+				}
+				else
+				{
+					y -= rand() % 2 - 1;
+				}
+
+
+				if (x < 0)
+				{
+					x = width;
+				}
+
+				if (y < 0)
+				{
+					y = height;
+				}
+
+				x %= width;
+				y %= height;
+
+				if (heightmap.getPixel(x, y).r >= seaLevel
+					&& getSurrounding(tmpRiver, x, y, 2) <= 1)
+				{
+					valid = true;
+				}
+			}
+
+
+			heightmap.setPixel(x, y, sf::Color(0, 0, 0));
+			elev.setPixel(x, y, sf::Color(15, 15, 15));
+			tmpRiver.setPixel(x, y, sf::Color(255, 255, 255));
+
+			placedTiles++;
+		}
+		riversPlaced++;
+
+	}
+
+	//Make rivers all orthogonal
+	for (int x = 1; x < width - 1; x++)
+	{
+		for (int y = 1; y < height - 1; y++)
+		{
+			if (tmpRiver.getPixel(x, y).r >= 5)
+			{
+				if (tmpRiver.getPixel(x+1, y+1).r >= 5)
+				{
+					if (tmpRiver.getPixel(x + 1, y).r <= 5)
+					{
+						elev.setPixel(x + 1, y, sf::Color(15, 15, 15));
+					}
+					else
+					{
+						if (tmpRiver.getPixel(x, y + 1).r <= 5)
+						{
+							elev.setPixel(x, y + 1, sf::Color(15, 15, 15));
+						}
+					}
+				}
+				if (tmpRiver.getPixel(x+1, y-1).r >= 5)
+				{
+					//RightUp
+					if (tmpRiver.getPixel(x + 1, y).r <= 5)
+					{
+						elev.setPixel(x + 1, y, sf::Color(15, 15, 15));
+					}
+					else
+					{
+						if (tmpRiver.getPixel(x, y + 1).r <= 5)
+						{
+							elev.setPixel(x, y + 1, sf::Color(15, 15, 15));
+						}
+					}
+				}
+				if (tmpRiver.getPixel(x-1, y+1).r >= 5)
+				{
+					//LeftDown
+					if (tmpRiver.getPixel(x - 1, y).r <= 5)
+					{
+						elev.setPixel(x - 1, y, sf::Color(15, 15, 15));
+					}
+					else
+					{
+						if (tmpRiver.getPixel(x, y - 1).r <= 5)
+						{
+							elev.setPixel(x, y - 1, sf::Color(15, 15, 15));
+						}
+					}
+				}
+				if (tmpRiver.getPixel(x-1, y-1).r >= 5)
+				{
+					//LeftUp
+					if (tmpRiver.getPixel(x - 1, y).r <= 5)
+					{
+						elev.setPixel(x - 1, y, sf::Color(15, 15, 15));
+					}
+					else
+					{
+						if (tmpRiver.getPixel(x, y - 1).r <= 5)
+						{
+							elev.setPixel(x, y - 1, sf::Color(15, 15, 15));
+						}
+					}
+				}
+			}
+		}
+	}
+
+	//Make rivers 1 tile wide
+	for (int x = 1; x < width - 1; x++)
+	{
+		for (int y = 1; y < height - 1; y++)
+		{
+			if (getSurrounding(tmpRiver, x, y, 2) >= 3)
+			{
+				elev.setPixel(x, y, sf::Color(0, 0, 0));
+				tmpRiver.setPixel(x, y, sf::Color(0, 0, 0));
+			}
+		}
+	}
 
 	this->rainfall = rain;
 	this->climate = clim;

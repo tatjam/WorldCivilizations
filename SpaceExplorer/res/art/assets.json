@@ -26,7 +26,16 @@
 
     "desertOverlayA": "res/art/overlay/desert.png",
     "desertOverlayB": "res/art/overlay/desertb.png",
-
+	
+	"riverUp": "res/art/overlay/river/up.png",
+	"riverDown": "res/art/overlay/river/down.png",
+	"riverLeft": "res/art/overlay/river/left.png",
+	"riverRight": "res/art/overlay/river/right.png",
+	"riverUpLeft": "res/art/overlay/river/ul.png",
+	"riverDownLeft": "res/art/overlay/river/dl.png",
+	"riverUpRight": "res/art/overlay/river/ur.png",
+	"riverDownRight": "res/art/overlay/river/dr.png",
+	
     "unitWorker": "res/art/units/worker.png"
   }
 ]

@@ -29,30 +29,40 @@ void WorldRenderer::renderUnits(sf::FloatRect viewRect, std::vector<Unit*> units
 
 	for (Unit* u : units)
 	{
-		//TODO: Visibility test
 		//TODO: Only draw if outside fog of war
 
 		int sX = u->x * tSide - (int)viewRect.left * tSide - 1;
 		int sY = u->y * tSide - ((int)viewRect.top) * tSide - 1;
 
-		//Put the unit into the renderlayer
-		Sprite s = Sprite();
+		//Check if unit (left or right) is visible
 
-		sf::Sprite sS = sf::Sprite();
+		if (((u->x + 1 >= viewRect.left && u->x + 1 <= viewRect.left + viewRect.width)
+			&& (u->y + 1 >= viewRect.top && u->y + 1 <= viewRect.top + viewRect.height))
 
-		//We assume sprite is limited to world
-		sS.setPosition(sX, sY);
-		sS.setTexture(landCache[u->id]);
+			|| ((u->x + world->width + 1 >= viewRect.left && 
+				u->x + world->width + 1<= viewRect.left + viewRect.width)
+				&& (u->y + 1 >= viewRect.top && u->y + 1 <= viewRect.top + viewRect.height)))
+		{
 
-		sS.setScale(1, 1);
+			//Put the unit into the renderlayer
+			Sprite s = Sprite();
 
-		s.s = sS;
+			sf::Sprite sS = sf::Sprite();
 
-		unitLayer.sprites.push_back(s);
+			//We assume sprite is limited to world
+			sS.setPosition(sX, sY);
+			sS.setTexture(landCache[u->id]);
 
-		sS.setPosition(sX + world->width * tSide, sY);
-		s.s = sS;
-		unitLayer.sprites.push_back(s);
+			sS.setScale(1, 1);
+
+			s.s = sS;
+
+			unitLayer.sprites.push_back(s);
+
+			sS.setPosition(sX + world->width * tSide, sY);
+			s.s = sS;
+			unitLayer.sprites.push_back(s);
+		}
 		
 	}
 
@@ -223,6 +233,13 @@ void WorldRenderer::renderGround(sf::FloatRect viewRect)
 				//Savanna
 				biome = 4;
 			}
+			else if (c == sf::Color(213, 234, 244))
+			{
+				nTile.s.setTexture(landCache["riverTile"]);
+				ground.sprites.push_back(nTile);
+				i++;
+				biome = 0;
+			}
 			else
 			{
 				//nTile.t = landCache["oceanTile"];
@@ -253,6 +270,71 @@ void WorldRenderer::renderGround(sf::FloatRect viewRect)
 				nOver.s.setTexture(landCache["hillsOverlay"]);
 				overlay.sprites.push_back(nOver);
 				i++;
+			}
+			else if (e.r == 15 && biome != 0)
+			{
+				//Check surrounding
+				if (world->elev.getPixel(aX + 1, aY).r == 15
+					|| world->heightmap.getPixel(aX + 1, aY).r <= world->seaLevel)
+				{
+					//Right connection
+					nOver.s.setTexture(landCache["riverRight"]);
+					overlay.sprites.push_back(nOver);
+					i++;
+				}
+
+				if (world->elev.getPixel(aX - 1, aY).r == 15
+					|| world->heightmap.getPixel(aX - 1, aY).r <= world->seaLevel)
+				{
+					//Left connection
+					nOver.s.setTexture(landCache["riverLeft"]);
+					overlay.sprites.push_back(nOver);
+					i++;
+				}
+
+				if (world->elev.getPixel(aX, aY + 1).r == 15
+					|| world->heightmap.getPixel(aX, aY + 1).r <= world->seaLevel)
+				{
+					//Down connection
+					nOver.s.setTexture(landCache["riverDown"]);
+					overlay.sprites.push_back(nOver);
+					i++;
+				}
+
+				if (world->elev.getPixel(aX, aY - 1).r == 15
+					|| world->heightmap.getPixel(aX, aY - 1).r <= world->seaLevel)
+				{
+					//Up connection
+					nOver.s.setTexture(landCache["riverUp"]);
+					overlay.sprites.push_back(nOver);
+					i++;
+				}
+
+				/*
+				if (world->elev.getPixel(aX - 1, aY - 1).r == 15)
+				{
+					//Up connection
+					nOver.s.setTexture(landCache["riverUpLeft"]);
+					overlay.sprites.push_back(nOver);
+					i++;
+				}
+
+				if (world->elev.getPixel(aX + 1, aY - 1).r == 15)
+				{
+					//Up connection
+					nOver.s.setTexture(landCache["riverUpRight"]);
+					overlay.sprites.push_back(nOver);
+					i++;
+				}
+
+				if (world->elev.getPixel(aX - 1, aY + 1).r == 15)
+				{
+					//Up connection
+					nOver.s.setTexture(landCache["riverDownLeft"]);
+					overlay.sprites.push_back(nOver);
+					i++;
+				}*/
+
 			}
 			else
 			{
