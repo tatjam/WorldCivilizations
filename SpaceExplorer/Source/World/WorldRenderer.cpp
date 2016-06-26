@@ -14,6 +14,9 @@ void WorldRenderer::loadData()
 	
 	tSide = root["side"].asInt();
 	std::cout << "Tiles are: " << tSide << "px side" << std::endl;
+
+	loader.loadFile("res/data/tilesettings.json", root, false);
+	forestThresold = root["forestThresold"].asInt();
 }
 
 
@@ -257,7 +260,7 @@ void WorldRenderer::renderGround(sf::FloatRect viewRect)
 			}
 
 			//Forestry stuff (using nOver too!)
-			if (world->resources.getPixel(aX, aY).g >= 160)
+			if (world->resources.getPixel(aX, aY).g >= forestThresold)
 			{
 				if (rand() % 1000 >= 500)
 				{

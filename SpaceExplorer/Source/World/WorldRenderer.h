@@ -21,6 +21,8 @@ public:
 	int camY = 0;
 	float camZoom = 1.0f;
 
+	int forestThresold = 0;
+
 	Scene* scene;
 	Engine* engine;
 	RenderLayer ground;

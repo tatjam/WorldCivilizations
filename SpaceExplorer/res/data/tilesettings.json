@@ -1,0 +1,10 @@
+{
+  
+  "forestThresold": 170,
+  
+  //Tile movement costs:
+  "forestCost": 50,
+  "hillCost": 25,
+  "mountainCost": 100
+
+}

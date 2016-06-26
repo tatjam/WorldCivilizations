@@ -381,11 +381,55 @@ void World::generateGeneric(noise::module::RidgedMulti ridged,
 		}
 	}
 
+
 	this->rainfall = rain;
 	this->climate = clim;
 	this->resources = strat;
 	this->biome = biome;
 	this->elev = elev;
+
+
+	moveCost = sf::Image();
+	moveCost.create(width, height);
+
+	//Generate move costs (from resource and elev)
+	//Load data from json
+	JSONLoader loader = JSONLoader();
+	Json::Value root;
+
+	loader.loadFile("res/data/tilesettings.json", root, false);
+
+	for (int x = 0; x < width; x++)
+	{
+		for (int y = 0; y < height; y++)
+		{
+			int val = 0;
+			if (resources.getPixel(x, y).g >= root["forestThresold"].asInt())
+			{
+				val += root["forestCost"].asInt();
+			}
+
+			if (elev.getPixel(x, y).r >= 128)
+			{
+				val += root["hillCost"].asInt();
+			}
+
+			if (elev.getPixel(x, y).r >= 255)
+			{
+				val += root["mountainCost"].asInt();
+			}
+
+			if (heightmap.getPixel(x, y).r <= seaLevel + 2)
+			{
+				moveCost.setPixel(x, y, sf::Color(0, 0, 255));
+			}
+			else
+			{
+				moveCost.setPixel(x, y, sf::Color(val, val, val));
+			}
+		}
+	}
+
 }
 
 //------------------------------------------------------------------
@@ -666,6 +710,7 @@ void World::generateA()
 
 	}
 
+	
 	
 
 	this->biome = biome;

@@ -65,7 +65,7 @@ int main()
 	sf::Sprite sp = sf::Sprite();
 	sf::Texture tex = sf::Texture();
 
-	tex.loadFromImage(world.biome);
+	tex.loadFromImage(world.moveCost);
 	sp.setTexture(tex);
 	sp.setScale(2, 2);
 	tex.setSmooth(false);

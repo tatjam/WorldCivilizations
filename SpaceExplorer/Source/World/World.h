@@ -26,6 +26,7 @@ public:
 	sf::Image biome;
 	sf::Image resources;
 	sf::Image climate;
+	sf::Image moveCost;
 
 	std::string name = "NOT_SET";
 

@@ -86,5 +86,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="save\example.json" />
+    <None Include="res\data\tilesettings.json" />
   </ItemGroup>
 </Project>
